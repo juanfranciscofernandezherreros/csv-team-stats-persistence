@@ -3,7 +3,7 @@ name: cleanup-merged-branch
 on:
   pull_request:
     types: [closed]
-    branches: [main]
+    branches: [ main ]
 
 permissions:
   contents: write
@@ -31,8 +31,8 @@ jobs:
               });
               core.info(`Deleted ${ref}`);
             } catch (error) {
-              if (error.status === 404 || error.status === 422) {
-                core.info(`Branch ${ref} is already absent or cannot be deleted; nothing to do.`);
+              if (error.status === 404) {
+                core.info(`Branch ${ref} is already absent; nothing to do.`);
                 return;
               }
               throw error;

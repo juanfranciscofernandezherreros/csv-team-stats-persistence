@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.3
+
+- [patch] Estandariza la automatización del repositorio con el flujo autónomo de csv-results-parser.
+
 ## 1.0.2 - 2026-09-25
 
 - [patch] Añade eliminación automática de la rama origen después de mergear una Pull Request en `main`.
