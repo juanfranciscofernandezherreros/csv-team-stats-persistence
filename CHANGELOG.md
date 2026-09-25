@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.5 - 2026-09-25
+
+- [patch] KAN-87 sustituye los schemas locales TeamStats por `basketball-event-contracts:1.0.2`.
+- [patch] Elimina la generación Avro local y configura Maven/CI con lectura autenticada de GitHub Packages.
+- [patch] Mantiene los namespaces, campos y persistencia existentes sin cambios funcionales.
+
 ## 1.0.4 - 2026-09-25
 
 - [patch] Refuerza AGENTS.md: lectura obligatoria por tarea, flujo autónomo y prohibición absoluta de escrituras directas en main.
