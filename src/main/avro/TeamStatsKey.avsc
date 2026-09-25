@@ -1,1 +1,0 @@
-{"namespace":"com.example.csvteamstats.avro","type":"record","name":"TeamStatsKey","fields":[{"name":"sourceEventId","type":"string"},{"name":"matchId","type":"string"},{"name":"period","type":"string"},{"name":"category","type":"string"},{"name":"metric","type":"string"}]}
