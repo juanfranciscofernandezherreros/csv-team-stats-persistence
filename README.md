@@ -1,4 +1,4 @@
-Current version: **1.0.1**
+Current version: **1.0.2**
 
 # csv-team-stats-persistence
 
