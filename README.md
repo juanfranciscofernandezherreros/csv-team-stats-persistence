@@ -1,4 +1,4 @@
-![version](https://img.shields.io/badge/version-1.0.5-blue)
+![version](https://img.shields.io/badge/version-1.1.0-blue)
 # csv-team-stats-persistence
 
 Microservicio de persistencia para estadísticas de equipo y periodo.
@@ -24,3 +24,17 @@ La unicidad es `(match_id, period, category, metric)`, por lo que una reentrega 
 Variables: `DB_URL`, `DB_USER`, `DB_PASS`, `KAFKA_BOOTSTRAP_SERVERS`, `KAFKA_SCHEMA_REGISTRY_URL`, `KAFKA_PARSED_TEAM_STATS_TOPIC`.
 
 Tests: `mvn -B test`. Integración PostgreSQL: `mvn -B verify -Pintegration`.
+
+
+## Estrategia de errores Kafka
+
+KAN-113 aplica la política de KAN-18 al consumo de `team-stats.parsed`.
+
+- errores de datos o integridad: non-retryable;
+- fallos transitorios de PostgreSQL: retryable;
+- mensajes agotados: `team-stats.parsed.DLT`;
+- `KAFKA_RETRY_MAX_ATTEMPTS`: intentos totales, default `3`;
+- `KAFKA_RETRY_BACKOFF_MS`: backoff fijo, default `1000`;
+- `KAFKA_TEAM_STATS_PERSISTENCE_DLT_TOPIC`: topic DLT configurable.
+
+Spring Kafka publica el registro original en DLT con headers de excepción y contexto.
