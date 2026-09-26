@@ -1,7 +1,9 @@
 package com.example.csvteamstats;
 
 import com.example.csvteamstats.avro.TeamStatsValue;
+import com.example.csvteamstats.entity.TeamStats;
 import com.example.csvteamstats.repository.TeamStatsRepository;
+import com.example.csvteamstats.repository.TeamStatsUpsertRepository;
 import com.example.csvteamstats.service.TeamStatsPersistenceService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,12 +15,15 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
 @SpringBootTest(properties = {
@@ -38,11 +43,9 @@ class PostgreSqlPersistenceIT {
         registry.add("spring.datasource.password", POSTGRES::getPassword);
     }
 
-    @Autowired
-    TeamStatsPersistenceService service;
-
-    @Autowired
-    TeamStatsRepository repository;
+    @Autowired TeamStatsPersistenceService service;
+    @Autowired TeamStatsRepository repository;
+    @Autowired TeamStatsUpsertRepository upserts;
 
     @BeforeEach
     void cleanDatabase() {
@@ -73,7 +76,6 @@ class PostgreSqlPersistenceIT {
         try {
             Future<?> first = executor.submit(() -> persistAfter(start, event));
             Future<?> second = executor.submit(() -> persistAfter(start, event));
-
             start.countDown();
             first.get();
             second.get();
@@ -83,12 +85,64 @@ class PostgreSqlPersistenceIT {
                     .findByMatchIdAndPeriodAndCategoryAndMetric(
                             "0fAJZWz1", "1st Quarter", "Scoring", "Field Goal Attempts")
                     .orElseThrow();
-
             assertEquals("20", saved.getHomeValue());
             assertEquals("event-concurrent", saved.getSourceEventId());
         } finally {
             executor.shutdownNow();
         }
+    }
+
+    @Test
+    void measuresSequentialVersusJdbcBatchThroughput() {
+        List<TeamStats> stats = benchmarkStats(1_000);
+
+        long sequentialStart = System.nanoTime();
+        stats.forEach(upserts::upsert);
+        long sequentialNanos = System.nanoTime() - sequentialStart;
+        assertEquals(stats.size(), repository.count());
+
+        repository.deleteAll();
+
+        long batchStart = System.nanoTime();
+        upserts.upsertBatch(stats);
+        long batchNanos = System.nanoTime() - batchStart;
+        assertEquals(stats.size(), repository.count());
+
+        double sequentialThroughput = throughput(stats.size(), sequentialNanos);
+        double batchThroughput = throughput(stats.size(), batchNanos);
+
+        System.out.printf(
+                "KAN-22 TEAM-STATS throughput: sequential=%.2f rows/s, jdbc-batch=%.2f rows/s, ratio=%.2fx%n",
+                sequentialThroughput,
+                batchThroughput,
+                batchThroughput / sequentialThroughput
+        );
+
+        assertTrue(sequentialThroughput > 0);
+        assertTrue(batchThroughput > 0);
+    }
+
+    private double throughput(int rows, long nanos) {
+        return rows / (nanos / 1_000_000_000.0);
+    }
+
+    private List<TeamStats> benchmarkStats(int count) {
+        List<TeamStats> stats = new ArrayList<>(count);
+        for (int index = 0; index < count; index++) {
+            TeamStats item = new TeamStats();
+            item.setSourceEventId("benchmark-event");
+            item.setMatchId("benchmark-match");
+            item.setPeriod("Q" + (index % 4 + 1));
+            item.setCategory("Category-" + (index / 50));
+            item.setMetric("Metric-" + index);
+            item.setHomeTeam("Home");
+            item.setHomeValue(Integer.toString(index % 100));
+            item.setAwayTeam("Away");
+            item.setAwayValue(Integer.toString((index + 1) % 100));
+            item.setSourceUrl("https://example/benchmark");
+            stats.add(item);
+        }
+        return stats;
     }
 
     private void persistAfter(CountDownLatch start, TeamStatsValue event) {

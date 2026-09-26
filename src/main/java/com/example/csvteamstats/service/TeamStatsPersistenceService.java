@@ -7,6 +7,8 @@ import com.example.csvteamstats.repository.TeamStatsUpsertRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class TeamStatsPersistenceService {
 
@@ -27,5 +29,16 @@ public class TeamStatsPersistenceService {
         TeamStats entity = mapper.toEntity(value, new TeamStats());
         repository.upsert(entity);
         return entity;
+    }
+
+    @Transactional
+    public void persistBatch(List<TeamStatsValue> values) {
+        if (values.isEmpty()) {
+            return;
+        }
+        List<TeamStats> stats = values.stream()
+                .map(value -> mapper.toEntity(value, new TeamStats()))
+                .toList();
+        repository.upsertBatch(stats);
     }
 }

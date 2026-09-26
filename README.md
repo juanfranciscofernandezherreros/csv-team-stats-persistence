@@ -1,4 +1,4 @@
-![version](https://img.shields.io/badge/version-1.2.0-blue)
+![version](https://img.shields.io/badge/version-1.3.0-blue)
 # csv-team-stats-persistence
 
 Microservicio de persistencia para estadísticas de equipo y periodo.
@@ -40,6 +40,14 @@ Este repositorio ya no mantiene copias locales de esos schemas ni genera clases 
 Los valores se guardan como texto para soportar enteros, decimales y porcentajes sin pérdida.
 
 Variables: `DB_URL`, `DB_USER`, `DB_PASS`, `KAFKA_BOOTSTRAP_SERVERS`, `KAFKA_SCHEMA_REGISTRY_URL`, `KAFKA_PARSED_TEAM_STATS_TOPIC`.
+
+## Persistencia batch
+
+KAN-22 cambia TEAM-STATS a consumo Kafka batch. Cada poll de hasta `KAFKA_MAX_POLL_RECORDS=500` registros se mapea y persiste en una sola llamada `JdbcTemplate.batchUpdate(...)`. PostgreSQL usa `reWriteBatchedInserts=true` para reducir round-trips.
+
+Se conserva el `ON CONFLICT (match_id, period, category, metric) DO UPDATE` de KAN-66, por lo que el redelivery del poll mantiene la idempotencia. Un fallo de escritura hace fallar la transacción completa y vuelve a la estrategia Kafka retry/DLT existente.
+
+La integración con Testcontainers mide 1.000 métricas con upsert secuencial frente a JDBC batch y publica ambos throughputs y su ratio en CI.
 
 Tests: `mvn -B test`. Integración PostgreSQL: `mvn -B verify -Pintegration`.
 
