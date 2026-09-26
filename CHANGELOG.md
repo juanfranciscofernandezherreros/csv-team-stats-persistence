@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.1 - 2026-09-26
+
+- [patch] KAN-113 enruta errores de deserialización Avro a DLT mediante `ErrorHandlingDeserializer`.
+- [patch] Permite publicar en DLT objetos Avro o bytes crudos y deja que Kafka seleccione una partición válida.
+- [patch] Hace fallar la recuperación si la publicación en DLT falla, evitando pérdida silenciosa.
+- [patch] Trata conflictos únicos concurrentes PostgreSQL (`23505`) como retryable y mantiene otras violaciones de integridad como non-retryable.
+- [patch] Añade cobertura para deserialización → DLT, fallo de publicación DLT y conflicto concurrente.
+
+
 ## 1.1.0 - 2026-09-26
 
 - [minor] KAN-113 aplica la estrategia común de errores Kafka de KAN-18.

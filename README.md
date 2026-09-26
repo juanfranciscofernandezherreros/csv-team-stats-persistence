@@ -1,4 +1,4 @@
-![version](https://img.shields.io/badge/version-1.1.0-blue)
+![version](https://img.shields.io/badge/version-1.1.1-blue)
 # csv-team-stats-persistence
 
 Microservicio de persistencia para estadísticas de equipo y periodo.
@@ -37,4 +37,4 @@ KAN-113 aplica la política de KAN-18 al consumo de `team-stats.parsed`.
 - `KAFKA_RETRY_BACKOFF_MS`: backoff fijo, default `1000`;
 - `KAFKA_TEAM_STATS_PERSISTENCE_DLT_TOPIC`: topic DLT configurable.
 
-Spring Kafka publica el registro original en DLT con headers de excepción y contexto.
+Spring Kafka publica el registro original en DLT con headers de excepción y contexto. Los errores de deserialización Avro se capturan mediante `ErrorHandlingDeserializer`, la DLT admite Avro y bytes crudos, y un fallo al publicar en la DLT se propaga para evitar pérdida silenciosa. Los conflictos únicos concurrentes (`SQLState 23505`) se consideran retryable; otras violaciones de integridad siguen siendo permanentes.
