@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.2 - 2026-09-26
+
+- [patch] KAN-113 cablea la clasificación de conflictos únicos concurrentes en el flujo real de persistencia.
+- [patch] Convierte únicamente PostgreSQL `23505` en una excepción transitoria retryable.
+- [patch] Mantiene el resto de `DataIntegrityViolationException` como non-retryable en el `DefaultErrorHandler`.
+- [patch] Añade tests de servicio y clasificación para ambos caminos.
+
+
 ## 1.1.1 - 2026-09-26
 
 - [patch] KAN-113 enruta errores de deserialización Avro a DLT mediante `ErrorHandlingDeserializer`.
