@@ -1,10 +1,9 @@
 package com.example.csvteamstats.config;
 
+import com.example.csvteamstats.service.ConcurrentUpsertConflictException;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.TransientDataAccessResourceException;
-
-import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,12 +18,11 @@ class KafkaErrorClassifierTest {
 
     @Test
     void treatsConcurrentUniqueConstraintConflictAsRetryable() {
-        SQLException uniqueViolation =
-                new SQLException("duplicate key", "23505");
-        DataIntegrityViolationException conflict =
-                new DataIntegrityViolationException("concurrent upsert", uniqueViolation);
-
-        assertThat(classifier.isRetryable(conflict)).isTrue();
+        assertThat(classifier.isRetryable(
+                new ConcurrentUpsertConflictException(
+                        "concurrent upsert",
+                        new DataIntegrityViolationException("duplicate"))))
+                .isTrue();
     }
 
     @Test
