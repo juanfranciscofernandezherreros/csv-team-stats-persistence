@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.0 - 2026-09-26
+
+- [minor] KAN-22 cambia TEAM-STATS persistence a consumo Kafka batch con `KAFKA_MAX_POLL_RECORDS=500` por defecto.
+- [minor] Persiste cada poll mediante `JdbcTemplate.batchUpdate(...)` manteniendo el upsert atómico de KAN-66.
+- [minor] Activa `reWriteBatchedInserts=true` para reducir round-trips PostgreSQL.
+- [minor] Añade tests batch y benchmark Testcontainers de 1.000 métricas secuencial vs JDBC batch.
+
 ## 1.2.0 - 2026-09-26
 
 - [minor] KAN-66 sustituye `findBy... + saveAndFlush()` por `ON CONFLICT (match_id, period, category, metric) DO UPDATE`.
