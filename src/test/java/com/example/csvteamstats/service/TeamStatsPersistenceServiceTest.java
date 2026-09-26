@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -23,7 +25,7 @@ class TeamStatsPersistenceServiceTest {
         TeamStats entity = new TeamStats();
         entity.setHomeValue("60");
 
-        when(mapper.toEntity(value, org.mockito.ArgumentMatchers.any(TeamStats.class))).thenReturn(entity);
+        when(mapper.toEntity(eq(value), any(TeamStats.class))).thenReturn(entity);
 
         TeamStats saved = new TeamStatsPersistenceService(repository, mapper).persist(value);
 
