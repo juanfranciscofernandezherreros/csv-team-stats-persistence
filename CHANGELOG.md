@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0 - 2026-09-26
+
+- [minor] KAN-66 sustituye `findBy... + saveAndFlush()` por `ON CONFLICT (match_id, period, category, metric) DO UPDATE`.
+- [minor] Elimina la carrera read-then-write y el flush explícito por mensaje.
+- [minor] Conserva `source_event_id` de la reimportación que produjo el estado vigente.
+- [minor] Añade tests de integración de insert/update y concurrencia.
+
 ## 1.1.2 - 2026-09-26
 
 - [patch] KAN-113 cablea la clasificación de conflictos únicos concurrentes en el flujo real de persistencia.
